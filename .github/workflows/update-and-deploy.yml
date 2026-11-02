@@ -1,0 +1,56 @@
+name: 更新收盤價並部署
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # UTC 時間；台北時間週一至週五 16:20 與 18:20（收盤資料公布後，第二次為補抓）
+    - cron: "20 8 * * 1-5"
+    - cron: "20 10 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  update-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 抓取收盤價
+        # 抓價失敗時保留上一次的資料，網站照常部署
+        continue-on-error: true
+        run: python scripts/fetch_prices.py
+
+      - name: 把新資料存回 repo
+        run: |
+          if [ -n "$(git status --porcelain data/)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add data/
+            git commit -m "📈 chore(data): 更新收盤價 $(TZ=Asia/Taipei date +%F)"
+            git push
+          fi
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

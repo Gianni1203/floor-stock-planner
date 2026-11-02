@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>地板股分批試算</title>
+<meta name="description" content="地板股 1:2:6 分批進場試算，自動帶入台股收盤價，支援股票與權證。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Crect width=%2216%22 height=%2216%22 rx=%223%22 fill=%22%231f3864%22/%3E%3Cpath d=%22M3 5l3 5 3-3 4 6%22 stroke=%22white%22 stroke-width=%221.6%22 fill=%22none%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <h1>地板股分批試算</h1>
+    <p class="sub">紀律第一：先看勝率、算資金夠不夠撐到勝率最高那天，再進場。</p>
+    <p class="data-status" id="dataStatus">讀取收盤價資料中…</p>
+  </div>
+  <nav class="tabs wrap" role="tablist">
+    <button role="tab" data-tab="stock" aria-selected="true">股票試算</button>
+    <button role="tab" data-tab="warrant">權證試算</button>
+    <button role="tab" data-tab="check">進場前檢查</button>
+    <button role="tab" data-tab="log">交易紀錄</button>
+  </nav>
+</header>
+
+<main class="wrap">
+<!-- ===================== 股票 ===================== -->
+<section id="tab-stock" class="tab" role="tabpanel">
+  <div class="grid2">
+    <div class="card">
+      <h2>標的</h2>
+      <label class="field">股票代號或名稱
+        <div class="row">
+          <input id="s_query" list="stockList" placeholder="例：3023 或 信邦" autocomplete="off">
+          <button class="btn" id="s_lookup">帶入收盤價</button>
+        </div>
+      </label>
+      <datalist id="stockList"></datalist>
+      <div class="quote" id="s_quote"></div>
+    </div>
+    <div class="card">
+      <h2>參數</h2>
+      <div class="fields">
+        <label class="field">總資金（元）<input type="number" id="s_capital" class="in" step="1000"></label>
+        <label class="field">評估股價（用進場最高價）<input type="number" id="s_ref" class="in" step="0.05"></label>
+        <label class="field">手續費率<input type="number" id="s_rate" class="in" step="0.000025"></label>
+        <label class="field">手續費折數 <small>1＝無折扣</small><input type="number" id="s_disc" class="in" step="0.01"></label>
+        <label class="field">最低手續費（元）<input type="number" id="s_min" class="in" step="1"></label>
+        <label class="field">證交稅（賣出）<input type="number" id="s_tax" class="in" step="0.001"></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>分批進場（尾盤買入）</h2>
+    <div class="kpis" id="s_split"></div>
+    <div class="tbl-wrap"><table class="tbl" id="s_days"></table></div>
+    <p class="note">第 4 天：出場（無論停損或獲利）。第 2、3 天請填實際尾盤成交價；按「收盤」可帶入最新收盤價。</p>
+  </div>
+
+  <div class="card">
+    <h2>持倉總結</h2>
+    <div class="kpis" id="s_summary"></div>
+  </div>
+
+  <div class="card">
+    <h2>第 4 天出場情境 <small>以第 3 天成交價為基準，±10% 漲跌停，價格已依升降單位調整</small></h2>
+    <div class="exit-input">
+      <label class="field">實際出場價<input type="number" id="s_exit" class="in" step="0.05" placeholder="出場後填入"></label>
+      <div id="s_exitResult" class="kpis"></div>
+    </div>
+    <div class="tbl-wrap"><table class="tbl" id="s_scen"></table></div>
+  </div>
+</section>
+
+<!-- ===================== 權證 ===================== -->
+<section id="tab-warrant" class="tab" role="tabpanel" hidden>
+  <div class="grid2">
+    <div class="card">
+      <h2>標的股與權證</h2>
+      <label class="field">標的股代號或名稱
+        <div class="row">
+          <input id="w_uquery" list="stockList" placeholder="例：3023" autocomplete="off">
+          <button class="btn" id="w_ulookup">帶入</button>
+        </div>
+      </label>
+      <div class="quote" id="w_uquote"></div>
+      <label class="field">權證代號或名稱
+        <div class="row">
+          <input id="w_query" list="warrantList" placeholder="例：信邦凱基59購01 或代號" autocomplete="off">
+          <button class="btn" id="w_lookup">帶入</button>
+        </div>
+      </label>
+      <datalist id="warrantList"></datalist>
+      <div class="quote" id="w_quote"></div>
+    </div>
+    <div class="card">
+      <h2>權證條件 <small>到權證網或券商 App 查</small></h2>
+      <div class="fields">
+        <label class="field">類型
+          <select id="w_type" class="in"><option value="call">認購</option><option value="put">認售</option></select>
+        </label>
+        <label class="field">標的股價（元）<input type="number" id="w_under" class="in" step="0.05"></label>
+        <label class="field">履約價（元）<input type="number" id="w_strike" class="in" step="0.01"></label>
+        <label class="field">行使比例<input type="number" id="w_ratio" class="in" step="0.001"></label>
+        <label class="field">到期日<input type="date" id="w_expiry" class="in"></label>
+        <label class="field">實質槓桿（倍）<input type="number" id="w_lev" class="in" step="0.1"></label>
+        <label class="field">委買價<input type="number" id="w_bid" class="in" step="0.01"></label>
+        <label class="field">委賣價<input type="number" id="w_ask" class="in" step="0.01"></label>
+      </div>
+      <div class="kpis" id="w_metrics"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>參數</h2>
+    <div class="fields fields-wide">
+      <label class="field">總資金（元）<input type="number" id="w_capital" class="in" step="1000"></label>
+      <label class="field">評估權證價（用進場最高價）<input type="number" id="w_ref" class="in" step="0.01"></label>
+      <label class="field">手續費率<input type="number" id="w_rate" class="in" step="0.000025"></label>
+      <label class="field">手續費折數<input type="number" id="w_disc" class="in" step="0.01"></label>
+      <label class="field">最低手續費（元）<input type="number" id="w_min" class="in" step="1"></label>
+      <label class="field">證交稅（賣出，權證 0.1%）<input type="number" id="w_tax" class="in" step="0.0005"></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>分批進場（1 張 = 1,000 單位）</h2>
+    <div class="kpis" id="w_split"></div>
+    <div class="tbl-wrap"><table class="tbl" id="w_days"></table></div>
+    <p class="note">權證以「張」為單位，每份張數無條件捨去。權證會隨時間價值遞減，持有天數越短越好；請避開快到期、價差大的權證。</p>
+  </div>
+
+  <div class="card">
+    <h2>持倉總結</h2>
+    <div class="kpis" id="w_summary"></div>
+  </div>
+
+  <div class="card">
+    <h2>第 4 天出場情境 <small>標的漲跌幅 × 實質槓桿估算，未含時間價值與波動率變化，僅供參考</small></h2>
+    <div class="exit-input">
+      <label class="field">實際權證出場價<input type="number" id="w_exit" class="in" step="0.01" placeholder="出場後填入"></label>
+      <div id="w_exitResult" class="kpis"></div>
+    </div>
+    <div class="tbl-wrap"><table class="tbl" id="w_scen"></table></div>
+  </div>
+</section>
+
+<!-- ===================== 檢查 ===================== -->
+<section id="tab-check" class="tab" role="tabpanel" hidden>
+  <div class="card">
+    <h2>股票：進場前檢查 <small>全部通過才執行</small></h2>
+    <div id="c_stock"></div>
+    <div class="verdict" id="c_stockVerdict"></div>
+  </div>
+  <div class="card">
+    <h2>權證：額外檢查 <small>門檻可自行調整</small></h2>
+    <div id="c_warrant"></div>
+    <div class="verdict" id="c_warrantVerdict"></div>
+  </div>
+</section>
+
+<!-- ===================== 紀錄 ===================== -->
+<section id="tab-log" class="tab" role="tabpanel" hidden>
+  <div class="card">
+    <h2>交易紀錄 <small>只存在這台裝置的瀏覽器</small></h2>
+    <div class="row wrap-row">
+      <button class="btn" id="l_add">新增一筆</button>
+      <button class="btn ghost" id="l_fromStock">帶入股票計畫</button>
+      <button class="btn ghost" id="l_fromWarrant">帶入權證計畫</button>
+      <button class="btn ghost" id="l_csv">匯出 CSV</button>
+    </div>
+    <div class="tbl-wrap"><table class="tbl log" id="l_table"></table></div>
+    <div class="kpis" id="l_summary"></div>
+  </div>
+</section>
+</main>
+
+<footer class="wrap foot">
+  <p>收盤價來源：臺灣證券交易所、證券櫃檯買賣中心 OpenAPI（每個交易日收盤後由 GitHub Actions 自動更新）；查不到時改用 FinMind 公開 API。本工具僅供試算，不構成投資建議。</p>
+</footer>
+
+<script src="calc.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
