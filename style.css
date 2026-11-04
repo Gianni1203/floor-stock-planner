@@ -132,3 +132,31 @@ input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 0;
   .check { grid-template-columns: 22px 1fr; }
   .check .i, .check .r { grid-column: 2; text-align: left; }
 }
+
+/* ---------- 小哥訊號 ---------- */
+.lead { margin: -4px 0 12px; font-size: 13px; }
+.filters { display: flex; flex-wrap: wrap; gap: 10px 12px; margin-bottom: 10px; }
+.filters .field { min-width: 160px; flex: 1 1 160px; max-width: 320px; }
+.dir { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 6px; }
+.dir.long { background: var(--neg-bg); color: var(--neg); }   /* 台股紅漲 */
+.dir.short { background: var(--pos-bg); color: var(--pos); }  /* 台股綠跌 */
+.tbl.heat td.hc { text-align: center; line-height: 1.25; min-width: 78px; }
+.tbl.heat td.hc b { display: block; font-size: 14px; }
+.tbl.heat td.hc small { color: var(--ink); opacity: .75; font-size: 11px; }
+.tbl.heat td.best { outline: 2px solid var(--accent); outline-offset: -2px; }
+.tbl.heat tr.thin td { color: var(--muted); }
+.tbl td.pos { color: var(--pos); } .tbl td.neg { color: var(--neg); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.chip { font-size: 12px; border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; background: var(--card); white-space: nowrap; }
+.chip.bad { border-color: var(--neg); color: var(--neg); }
+.chip em { font-style: normal; font-weight: 600; }
+.chip em.pos { color: var(--pos); } .chip em.neg { color: var(--neg); }
+.latest-cat { padding: 10px 0; border-top: 1px solid var(--line); }
+.latest-cat:first-child { border-top: 0; }
+.lc-head small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+.entry-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.entry-cat { border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-width: 0; }
+.entry-cat textarea { width: 100%; margin-top: 6px; font: inherit; font-size: 13px; border-radius: 8px; padding: 6px 8px;
+  background: var(--input-bg); color: var(--input-ink); border: 1px solid var(--input-line); resize: vertical; }
+pre.csv { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px; font-size: 12px; max-height: 220px; overflow: auto; white-space: pre-wrap; word-break: break-all; }
+@media (max-width: 760px) { .entry-grid { grid-template-columns: 1fr; } .filters .field { max-width: none; } }

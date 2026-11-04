@@ -22,6 +22,8 @@
     <button role="tab" data-tab="warrant">權證試算</button>
     <button role="tab" data-tab="check">進場前檢查</button>
     <button role="tab" data-tab="log">交易紀錄</button>
+    <button role="tab" data-tab="signals">小哥訊號統計</button>
+    <button role="tab" data-tab="entry">訊號登錄</button>
   </nav>
 </header>
 
@@ -176,6 +178,73 @@
     <div class="kpis" id="l_summary"></div>
   </div>
 </section>
+
+<!-- ===================== 小哥訊號統計 ===================== -->
+<section id="tab-signals" class="tab" role="tabpanel" hidden>
+  <div class="card">
+    <h2>各類訊號的後續表現 <small id="sg_meta"></small></h2>
+    <p class="note lead">每格是「照這類訊號進場、持有 N 天後出場」的勝率與平均報酬（已依多空方向調整，做空時股價跌算賺）。挑勝率和平均報酬都夠高、而且樣本數 ≥ 20 的類別與天數，就是值得照做的規則。</p>
+    <div class="filters">
+      <label class="field">期間
+        <select id="sg_period" class="in">
+          <option value="all">全部</option><option value="30">近 1 個月</option><option value="90">近 3 個月</option><option value="180">近 6 個月</option>
+        </select>
+      </label>
+      <label class="field">衡量
+        <select id="sg_metric" class="in">
+          <option value="r">報酬</option><option value="ex">超額報酬（扣掉 0050 同期漲跌）</option>
+        </select>
+      </label>
+      <label class="field">交易成本（來回）
+        <select id="sg_cost" class="in">
+          <option value="0">不扣</option><option value="0.00585" selected>股票 0.585%</option><option value="0.01">1%（含滑價）</option>
+        </select>
+      </label>
+    </div>
+    <div class="tbl-wrap"><table class="tbl heat" id="sg_table"></table></div>
+    <p class="note">框起來的格子 = 該類別平均報酬最高的持有天數（樣本 ≥ 10 才標）。灰字 = 樣本不到 20 筆，先參考就好。進場方式：地板股為隔天尾盤（收盤價），其餘為隔天開盤。</p>
+  </div>
+
+  <div class="card">
+    <h2>最新一天的訊號 <small id="sg_latestDate"></small></h2>
+    <div id="sg_latest"></div>
+  </div>
+
+  <div class="card">
+    <h2>全部訊號</h2>
+    <div class="filters">
+      <label class="field">類別<select id="sg_fcat" class="in"><option value="">全部類別</option></select></label>
+      <label class="field">代號或名稱<input id="sg_fcode" class="in" placeholder="例：2330 或 台積電"></label>
+    </div>
+    <div class="tbl-wrap"><table class="tbl" id="sg_list"></table></div>
+    <div class="row"><button class="btn ghost" id="sg_more" hidden>顯示更多</button></div>
+  </div>
+</section>
+
+<!-- ===================== 訊號登錄 ===================== -->
+<section id="tab-entry" class="tab" role="tabpanel" hidden>
+  <div class="card">
+    <h2>登錄當天的小哥標的</h2>
+    <p class="note lead">把每個類別的標的貼進對應欄位（可以直接貼「6890 來億-KY」這種格式，代號會自動抓出來），再按「存到 GitHub」。存進 repo 後，GitHub Actions 會每天收盤後自動更新每檔的後續漲跌。</p>
+    <div class="filters">
+      <label class="field">訊號日（文章的資料日期）<input type="date" id="en_date" class="in"></label>
+      <label class="field">GitHub 帳號/Repo <small>部署在 GitHub Pages 時會自動偵測</small><input id="en_repo" class="in" placeholder="例：mingcing/floor-stock-planner"></label>
+      <div class="field"><span>&nbsp;</span><button class="btn ghost" id="en_load">載入這天已登錄的</button></div>
+    </div>
+    <div class="entry-grid" id="en_cats"></div>
+  </div>
+  <div class="card">
+    <h2>預覽 <small id="en_count"></small></h2>
+    <pre class="csv" id="en_csv"></pre>
+    <div class="row wrap-row">
+      <button class="btn" id="en_github">存到 GitHub（新檔案）</button>
+      <button class="btn ghost" id="en_edit">在 GitHub 編輯已有檔案</button>
+      <button class="btn ghost" id="en_copy">複製 CSV</button>
+      <button class="btn ghost" id="en_download">下載 CSV</button>
+    </div>
+    <p class="note">「存到 GitHub」會開啟 GitHub 的新增檔案頁面並自動帶入內容，按下 Commit changes 就完成。如果這天已經有檔案，改按「在 GitHub 編輯已有檔案」，把預覽內容整段貼上取代。</p>
+  </div>
+</section>
 </main>
 
 <footer class="wrap foot">
@@ -184,5 +253,6 @@
 
 <script src="calc.js"></script>
 <script src="app.js"></script>
+<script src="signals.js"></script>
 </body>
 </html>

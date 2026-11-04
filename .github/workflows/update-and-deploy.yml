@@ -36,13 +36,19 @@ jobs:
         continue-on-error: true
         run: python scripts/fetch_prices.py
 
+      - name: 計算小哥訊號後續表現
+        continue-on-error: true
+        run: python scripts/compute_signals.py
+
       - name: 把新資料存回 repo
         run: |
           if [ -n "$(git status --porcelain data/)" ]; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add data/
-            git commit -m "📈 chore(data): 更新收盤價 $(TZ=Asia/Taipei date +%F)"
+            git commit -m "📈 chore(data): 更新收盤價與訊號績效 $(TZ=Asia/Taipei date +%F)"
+            # 期間若你剛好新增了訊號檔，先合併再推
+            git pull --rebase --autostash
             git push
           fi
 

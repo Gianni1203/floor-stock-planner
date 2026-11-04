@@ -1,0 +1,12 @@
+[
+  {"key": "投信多", "label": "投信買超＋籌碼偏多", "dir": 1, "entry": "open", "note": "隔天開盤買進"},
+  {"key": "投信空", "label": "投信賣超＋籌碼偏空", "dir": -1, "entry": "open", "note": "隔天開盤放空"},
+  {"key": "分點買", "label": "關鍵分點買超股", "dir": 1, "entry": "open", "note": "隔天開盤買進"},
+  {"key": "分點賣", "label": "關鍵分點賣超股", "dir": -1, "entry": "open", "note": "隔天開盤放空"},
+  {"key": "上軌", "label": "籌碼好沿上軌", "dir": 1, "entry": "open", "note": "隔天開盤買進"},
+  {"key": "下軌", "label": "籌碼差沿下軌", "dir": -1, "entry": "open", "note": "隔天開盤放空"},
+  {"key": "主力權證", "label": "主力權證認購表（隔日沖，拉高短空）", "dir": -1, "entry": "open", "note": "隔天開盤放空；另看隔天最高漲幅"},
+  {"key": "波段認購", "label": "波段權證 認購", "dir": 1, "entry": "open", "note": "隔天開盤買進（標的股）"},
+  {"key": "波段認售", "label": "波段權證 認售", "dir": -1, "entry": "open", "note": "隔天開盤放空（標的股）"},
+  {"key": "地板股", "label": "小於地板股（隔日下殺搶短多）", "dir": 1, "entry": "close", "note": "隔天尾盤（收盤價）買進"}
+]

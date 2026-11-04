@@ -97,6 +97,8 @@ def main():
     stocks: dict[str, list] = {}
     warrants: dict[str, list] = {}
     dates: list[str] = []
+    stock_dates: list[str] = []
+    ohlc: dict[str, list] = {}  # 個股當日 [開, 高, 低, 收]，存成歷史供訊號追蹤
     sources = {}
 
     # 1) 上市
@@ -116,6 +118,10 @@ def main():
                 warrants[code] = [name, close]
             else:
                 stocks[code] = [name, close, None, "上市"]
+                if d:
+                    stock_dates.append(d)
+                if close:
+                    ohlc[code] = [num(r.get("OpeningPrice")), num(r.get("HighestPrice")), num(r.get("LowestPrice")), close]
             n += 1
         sources["twse"] = n
         log("TWSE ok", n)
@@ -140,6 +146,10 @@ def main():
                 warrants[code] = [name, close]
             else:
                 stocks.setdefault(code, [name, close, None, "上櫃"])
+                if d:
+                    stock_dates.append(d)
+                if close and code not in ohlc:
+                    ohlc[code] = [num(r.get("Open")), num(r.get("High")), num(r.get("Low")), close]
             n += 1
         sources["tpex"] = n
         log("TPEx ok", n)
@@ -213,6 +223,16 @@ def main():
             json.dumps({**meta, "fields": ["name", "close"], "w": warrants}, ensure_ascii=False, separators=(",", ":")),
             encoding="utf-8",
         )
+    # 5) 收盤價歷史快照（訊號追蹤用）：data/history/YYYY-MM-DD.json
+    if ohlc and stock_dates:
+        hist_date = max(stock_dates)
+        hdir = DATA / "history"
+        hdir.mkdir(exist_ok=True)
+        (hdir / f"{hist_date}.json").write_text(
+            json.dumps({"date": hist_date, "fields": ["open", "high", "low", "close"], "s": ohlc}, separators=(",", ":")),
+            encoding="utf-8",
+        )
+        log("history", hist_date, len(ohlc))
     log("done", len(stocks), "stocks", len(warrants), "warrants", data_date)
 
 
